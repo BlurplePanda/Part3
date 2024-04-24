@@ -20,17 +20,21 @@ public class ArticulationPoints{
             depths.put(stop, -1);
         }
         Set<Stop> aPoints = new HashSet<>();
-        int numSubTrees = 0;
-        Stop start = graph.getStops().iterator().next();
-        depths.put(start, 0);
-        for (Stop neighbour : start.getNeighbours()) {
-            if (depths.get(neighbour) == -1) {
-                recArtPts(neighbour, 1, start, aPoints, depths);
-                numSubTrees++;
+        for (Stop stop : graph.getStops()) {
+            if (depths.get(stop) == -1) {
+                int numSubTrees = 0;
+                Stop start = stop;
+                depths.put(start, 0);
+                for (Stop neighbour : start.getNeighbours()) {
+                    if (depths.get(neighbour) == -1) {
+                        recArtPts(neighbour, 1, start, aPoints, depths);
+                        numSubTrees++;
+                    }
+                }
+                if (numSubTrees > 1) {
+                    aPoints.add(start);
+                }
             }
-        }
-        if (numSubTrees > 1) {
-            aPoints.add(start);
         }
 
         return aPoints;
