@@ -51,8 +51,6 @@ public class NetworkViewer {
     private TextArea displayText;
     private TextField walkingDistanceTextField;
     private Slider walkingDistanceSlider;
-    private TextField startTextField;
-    private TextField goalTextField;
 
     private static final int LIMIT_WALKING_DISTANCE = 500;
 
@@ -77,9 +75,6 @@ public class NetworkViewer {
             walkingDistanceTextField = new TextField();
             walkingDistanceSlider = new Slider(0,LIMIT_WALKING_DISTANCE,0);
 
-            Label startAndGoalLabel = new Label("Start and Goal:");
-            startTextField = new TextField();
-            goalTextField = new TextField();
 
             // Add the control elements to the controls Grid, giving column and row)
             controlsGrid.setAlignment(Pos.CENTER);
@@ -138,12 +133,6 @@ public class NetworkViewer {
     public double getRatioLatLon() {return ratioLatLon;}
 
 
-
-
-    // Fields for the A* search
-    private Stop startLocation;
-    private Stop goalLocation;
-    private List<Edge> pathEdges = null;    // List of edges forming a path to be displayed 
 
 
 
@@ -279,50 +268,13 @@ public class NetworkViewer {
      *  (since they don't use the pathEdges or start and goal locations.)
      */
     public void resetSearch(){
-        pathEdges = null;
     }
 
-
-
-    // --------------------------------------
-    // Handling the UI: INVOKING THE PATH SEARCH
-    //  Entering the start and goal places in the text fields
-    //  Choosing the start and goal places with mouse clicks
-    // --------------------------------------
-
-
-    /**
-     * Key typing event for the Start text field
-     *  Entering characters will display a list of the stops with
-     *  names matching the characters so far.
-     */
-    public void handleStartGoalKey(KeyEvent event) {
-        // System.out.println("Look up event [" + event.getCode() + "]  "
-        //                    + "text '" + event.getText() +"'"
-        //                    + ((TextField) event.getSource()).getText());
-
-        if (event.getCode()!=KeyCode.ENTER && event.getCode()!=KeyCode.TAB){ // ENTER key was handled by handleStartAction
-            StringBuilder names = new StringBuilder("");
-            for (Stop stop : (graph.getAllMatchingStops(((TextField) event.getSource()).getText()))){
-                names.append(stop.getName()).append("\n");
-            }
-            displayText.setText(names.toString());
-        }
-        event.consume();
-    }
-
-    private Stop goalStop = null;
-    private Stop prevStartStop = null;
 
     /*
-     * Handle Mouse clicks on the canvas to select start/goal locations.
+     * Handle Mouse clicks on the canvas to select stops.
      * Find the node closest to the click then
-     *  If shift key, always set goal location
-     *  If start location is empty:  set start location 
-     *  If goal location is empty:   set goal location    
-     *  If both locations not empty: move goal location to start and set new goal location
-     *
-     * Call AStart shortestPath finder to get path and draw graph.
+     * display the stop info in the text area
      */
     public void handleMouseClick(MouseEvent event) {
         if (dragActive) {
@@ -567,52 +519,6 @@ public class NetworkViewer {
 
     }
 
-
-    /**
-     * Draw the list of Path Edges (eg, returned from A* search)
-     */
-    public void drawPath() {
-        if (pathEdges!=null){
-            for (Edge edge : pathEdges) {
-                drawHighlightedEdge(edge);
-            }
-        }
-    }
-
-
-    /**
-     * Constructs a String description of the current path (if there is one)
-     * and puts it in the displayText text area.
-     * Assumes that the edges in the current path are in order from the start node to the goal node
-     */
-    public void reportPath(){
-        double totalDistance = 0;
-        StringBuilder pathText = new StringBuilder();
-        if (startLocation!=null && goalLocation!=null){
-            pathText.append("START: ").append(startLocation.getName()).append("\n");
-            pathText.append("GOAL:  ").append(goalLocation.getName()).append("\n");
-
-            if (pathEdges == null || pathEdges.isEmpty()){
-                if(startLocation == goalLocation){
-                    pathText.append("Goal is same as Start; no path required");
-                }
-                else {
-                    pathText.append("No path found");
-                }
-            }
-            else {
-                pathText.append("PATH:\n");
-                for (Edge edge : pathEdges){
-                    totalDistance += edge.distance();
-                    pathText.append("  ").append(edge.toString()).append("\n");
-                }
-                pathText.append("  ENDING AT ").append(goalLocation.getName()).append("\n");
-                pathText.append(String.format("Total path distance = %.3fkm",
-                                              totalDistance/1000));
-            }
-        }
-        displayText.setText(pathText.toString());
-    }
 
     /**
      * Draw an edge in the graph
