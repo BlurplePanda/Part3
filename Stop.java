@@ -14,8 +14,7 @@ public class Stop implements Comparable<Stop> {
     private String id;
 
     // data structure for holding the (directed) outEdges out of the stop
-    private Collection<Edge> outEdges = new HashSet<Edge>();
-    private Collection<Edge> inEdges = new HashSet<Edge>();
+    private Collection<Stop> neighbours = new HashSet<Stop>();
 
     // data structure for holding a link to the lines that stop is part of   
     private Collection<Line> lines = new HashSet<Line>();
@@ -132,45 +131,14 @@ public class Stop implements Comparable<Stop> {
     //  outEdges is a collection of the (directed) edges out of the stop,
     //--------------------------------------------
 
-    /** Get the collection of outEdges*/
-    public Collection<Edge> getOutEdges() {
-        return Collections.unmodifiableCollection(outEdges);
+    /** Get the collection of neighbouring stops*/
+    public Collection<Stop> getNeighbours() {
+        return Collections.unmodifiableCollection(neighbours);
     }
          
-    /** add a new edge out of this stop  */
-    public void addOutEdge(Edge edge) {
-        for (Edge e : outEdges) {
-            if (e.toStop().equals(edge.toStop())) {
-                return;
-            }
-        }
-        this.outEdges.add(edge);
-    }
-
-    //--------------------------------------------
-    //  Setting and getting the neighbours of the stop
-    //
-    //  inEdges is a collection of the (directed) edges into the stop,
-    //--------------------------------------------
-
-    /** Get the collection of outEdges*/
-    public Collection<Edge> getInEdges() {
-        return Collections.unmodifiableCollection(inEdges);
-    }
-
-    /** add a new edge out of this stop  */
-    public void addInEdge(Edge edge) {
-        this.inEdges.add(edge);
-    }
-
-
-    /**
-     * Delete outEdges of the specified type.
-     * [needed for removing Walking outEdges]
-     */
-    public void deleteEdgesOfType(String type) {
-        // remove outEdges that are of the specified type
-        outEdges.removeIf((Edge e)->type.equals(e.transpType()));
+    /** add a new neighbour  */
+    public void addNeighbour(Stop neighbour) {
+        this.neighbours.add(neighbour);
     }
 
 
