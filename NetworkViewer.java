@@ -71,7 +71,7 @@ public class NetworkViewer {
             // The controls
             Button reloadButton = new Button("Reload Map");
             Button quitButton = new Button("Quit");
-            Button componentsButton = new Button("Compute strongly connected components");
+            Button articulationPointsButton = new Button("Compute articulation points");
 
             Label walkingLabel = new Label("Set max walking dist:");
             walkingDistanceTextField = new TextField();
@@ -91,12 +91,12 @@ public class NetworkViewer {
             controlsGrid.add(walkingLabel,             1, 0);
             controlsGrid.add(walkingDistanceSlider,    2, 0);
             controlsGrid.add(walkingDistanceTextField, 3, 0);
-            controlsGrid.add(componentsButton, 1, 1);
+            controlsGrid.add(articulationPointsButton, 1, 1);
 
             //Set the handlers for the controls.
             reloadButton.setOnAction(this::handleReload);
             quitButton.setOnAction(this::handleQuit);
-            componentsButton.setOnAction(this::handleComponents);
+            articulationPointsButton.setOnAction(this::handleArticulationPoints);
 
             walkingDistanceTextField.setOnAction(this::handleWalkingDistance);
             walkingDistanceSlider.setOnMouseReleased(this::handleWalkingDistanceSlider);
@@ -158,8 +158,6 @@ public class NetworkViewer {
 
     public Zoning zoneData;     // Data for drawing the coastline and zone boundaries
 
-    // kosaraju's stuff
-    private Map<Stop, Integer> components;
 
     /**
      * Entry Method: (Called by Main once the GUI has been set up)
@@ -183,12 +181,10 @@ public class NetworkViewer {
     // ---------------------------------
 
     /**
-     * Handle the Component computing button
+     * Handle the articulation point computing button
      */
-    public void handleComponents(ActionEvent event) {
+    public void handleArticulationPoints(ActionEvent event) {
         event.consume();
-        components = Components.findComponents(graph);
-        drawMap(graph);
     }
 
     /**
@@ -284,7 +280,6 @@ public class NetworkViewer {
      */
     public void resetSearch(){
         pathEdges = null;
-        components = null;
     }
 
 
@@ -566,43 +561,8 @@ public class NetworkViewer {
             drawEdge(edge);
         }
 
-        if (components == null) {
-            for (Stop stop : graph.getStops()) {
-                drawStop(stop, STOP_SIZE, Color.BLUE);
-            }
-        }
-        else {
-            int numComponents = new HashSet<>(components.values()).size();
-
-            // Draw the stops
-            Color[] subGraphColors = new Color[numComponents];
-            for (int i = 0; i < numComponents; i++) {
-                subGraphColors[i] = Color.hsb((180.0 + (i * 360.0 / numComponents)) % 360, 1, 1);
-            }
-            for (Stop stop : graph.getStops()) {
-                drawStop(stop, STOP_SIZE, subGraphColors[components.get(stop)]);
-            }
-
-            // reverse the components map, so it's nicer to use
-            Map<Integer, Set<Stop>> betterComponents = new HashMap<>();
-            for (Stop stop : components.keySet()) {
-                int componentNum = components.get(stop);
-                if (betterComponents.get(componentNum) == null) {
-                    betterComponents.put(componentNum, new HashSet<>(Set.of(stop)));
-                }
-                else {
-                    betterComponents.get(componentNum).add(stop);
-                }
-            }
-            // report all the strongly connected components in the text area
-            displayText.clear();
-            for (int componentNum : betterComponents.keySet()) {
-                displayText.appendText(componentNum+": ");
-                for (Stop stop : betterComponents.get(componentNum)) {
-                    displayText.appendText(stop.getId()+" ");
-                }
-                displayText.appendText("\n");
-            }
+        for (Stop stop : graph.getStops()) {
+            drawStop(stop, STOP_SIZE, Color.BLUE);
         }
 
     }
