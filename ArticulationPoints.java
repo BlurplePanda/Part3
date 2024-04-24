@@ -1,6 +1,4 @@
-import java.util.Collection;
-import java.util.List;
-import java.util.ArrayList;
+import java.util.*;
 
 //=============================================================================
 //   Finding Articulation Points
@@ -17,18 +15,47 @@ public class ArticulationPoints{
      * Return a collection of all the Stops in the graph that are articulation points.
      */
     public static Collection<Stop> findArticulationPoints(Graph graph) {
+        Map<Stop, Integer> depths = new HashMap<>();
+        for (Stop stop : graph.getStops()) {
+            depths.put(stop, -1);
+        }
+        Set<Stop> aPoints = new HashSet<>();
+        int numSubTrees = 0;
+        Stop start = graph.getStops().iterator().next();
+        depths.put(start, 0);
+        for (Stop neighbour : start.getNeighbours()) {
+            if (depths.get(neighbour) == -1) {
+                recArtPts(neighbour, 1, start, aPoints, depths);
+                numSubTrees++;
+            }
+        }
+        if (numSubTrees > 1) {
+            aPoints.add(start);
+        }
 
+        return aPoints;
+    }
 
+    private static int recArtPts(Stop node, int depth, Stop fromNode, Set<Stop> aPoints, Map<Stop, Integer> depths) {
+        depths.put(node, depth);
+        int reachBack = depth;
+        for (Stop neighbour : node.getNeighbours()) {
+            if (neighbour == fromNode) {
+                continue;
+            }
+            else if (depths.get(neighbour) != -1) {
+                reachBack = Math.min(depths.get(neighbour), reachBack);
+            }
+            else {
+                int childReach = recArtPts(neighbour, depth+1, node, aPoints, depths);
+                if (childReach >= depth) {
+                    aPoints.add(node);
+                }
+                reachBack = Math.min(childReach, reachBack);
 
-
-
-
-
-
-
-
-
-        return null; // to make it compile
+            }
+        }
+        return reachBack;
     }
 
 
