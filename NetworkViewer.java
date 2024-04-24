@@ -124,8 +124,9 @@ public class NetworkViewer {
     private static final int STOP_SIZE = 5; // drawing size of stops
     private static final double EDGE_WIDTH = 0.5; // drawing size of edges
     private Stop closestStop;
+    private Collection<Stop> aPoints;
 
-    
+
     // Methods to access the fields  (used in Projection class)
 
     public double getScale() {return scale;}
@@ -175,6 +176,20 @@ public class NetworkViewer {
      */
     public void handleArticulationPoints(ActionEvent event) {
         event.consume();
+        aPoints = ArticulationPoints.findArticulationPoints(graph);
+        drawMap(graph);
+        if (aPoints != null) {
+            // highlight articulation points (red)
+            for (Stop aPoint : aPoints) {
+                drawStop(aPoint, STOP_SIZE*2, Color.RED);
+            }
+
+            // report articulation points in text area
+            displayText.setText("Articulation points:\n");
+            for (Stop stop : aPoints) {
+                displayText.appendText(stop.toString()+"\n");
+            }
+        }
     }
 
     /**
@@ -270,6 +285,8 @@ public class NetworkViewer {
      */
     public void resetSearch(){
         closestStop = null;
+        aPoints = null;
+        displayText.clear();
     }
 
 
@@ -290,10 +307,15 @@ public class NetworkViewer {
         GisPoint location = Projection.screen2Model(screenPoint, this);
 
         closestStop = findClosestStop(location, graph);
+
+        drawMap(graph);
+
+        // highlight selected stop (green)
         if (closestStop != null) {
+            drawStop(closestStop, STOP_SIZE*2, Color.GREEN);
             displayText.setText(closestStop.toString());
         }
-        drawMap(graph);
+
         event.consume();
     }
 
@@ -519,10 +541,6 @@ public class NetworkViewer {
         for (Stop stop : graph.getStops()) {
             drawStop(stop, STOP_SIZE, Color.BLUE);
         }
-        if (closestStop != null) {
-            drawStop(closestStop, STOP_SIZE*2, Color.RED);
-        }
-
     }
 
 
