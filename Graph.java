@@ -1,9 +1,4 @@
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.TreeSet;
-import java.util.HashSet;
+import java.util.*;
 
 
 /**
@@ -50,7 +45,7 @@ public class Graph {
         System.out.println("\n=============================\nStops:");
         for (Stop stop : stops){
             System.out.println(stop);
-            System.out.println("  "+stop.getOutEdges().size()+"  out edges; ");
+            System.out.println("  "+stop.getNeighbours().size()+"  neighbours; ");
         }
         System.out.println("===============");
     }
@@ -78,18 +73,16 @@ public class Graph {
                     continue;
                 }
                 Edge edge = new Edge(from, to, transpType, line, distance);
-                from.addOutEdge(edge);
-                to.addInEdge(edge);
+                from.addNeighbour(to);
+                to.addNeighbour(from);
                 edges.add(edge);
             }
         }
     }
 
     private boolean isConnected(Stop stop1, Stop stop2) {
-        for (Edge e : stop1.getOutEdges()) {
-            if (e.toStop().equals(stop2)) {
-                return true;
-            }
+        if (stop1.getNeighbours().contains(stop2) || stop2.getNeighbours().contains(stop1)) {
+            return true;
         }
         return false;
     }
@@ -110,9 +103,12 @@ public class Graph {
             for (Stop stop2 : stops) {
                 double dist = stop1.distanceTo(stop2);
                 if (dist <= walkingDistance) {
+                    if (isConnected(stop1, stop2)) {
+                        continue;
+                    }
                     Edge edge = new Edge(stop1, stop2, Transport.WALKING, null, dist);
-                    stop1.addOutEdge(edge);
-                    stop2.addInEdge(edge);
+                    stop1.addNeighbour(stop2);
+                    stop2.addNeighbour(stop1);
                     edges.add(edge);
                 }
             }
@@ -126,10 +122,13 @@ public class Graph {
      * - from the forward neighbours of each Stop.
      */
     public void removeWalkingEdges() {
-        edges.removeIf((Edge e)->e.transpType() == Transport.WALKING);
-        for (Stop stop : stops) {
-            stop.deleteEdgesOfType(Transport.WALKING);
+        for (Edge edge : edges) {
+            if (edge.transpType().equals(Transport.WALKING)) {
+                edge.toStop().removeNeighbour(edge.fromStop());
+                edge.fromStop().removeNeighbour(edge.toStop());
+            }
         }
+        edges.removeIf((Edge e)->e.transpType().equals(Transport.WALKING));
     }
 
     //=============================================================================

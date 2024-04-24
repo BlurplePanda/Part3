@@ -123,6 +123,7 @@ public class NetworkViewer {
 
     private static final int STOP_SIZE = 5; // drawing size of stops
     private static final double EDGE_WIDTH = 0.5; // drawing size of edges
+    private Stop closestStop;
 
     
     // Methods to access the fields  (used in Projection class)
@@ -268,6 +269,7 @@ public class NetworkViewer {
      *  (since they don't use the pathEdges or start and goal locations.)
      */
     public void resetSearch(){
+        closestStop = null;
     }
 
 
@@ -287,10 +289,11 @@ public class NetworkViewer {
         Point2D screenPoint = new Point2D(event.getX(), event.getY());
         GisPoint location = Projection.screen2Model(screenPoint, this);
 
-        Stop closestStop = findClosestStop(location, graph);
+        closestStop = findClosestStop(location, graph);
         if (closestStop != null) {
             displayText.setText(closestStop.toString());
         }
+        drawMap(graph);
         event.consume();
     }
 
@@ -515,6 +518,9 @@ public class NetworkViewer {
 
         for (Stop stop : graph.getStops()) {
             drawStop(stop, STOP_SIZE, Color.BLUE);
+        }
+        if (closestStop != null) {
+            drawStop(closestStop, STOP_SIZE*2, Color.RED);
         }
 
     }

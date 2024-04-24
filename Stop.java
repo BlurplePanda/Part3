@@ -141,5 +141,7 @@ public class Stop implements Comparable<Stop> {
         this.neighbours.add(neighbour);
     }
 
-
+    public void removeNeighbour(Stop neighbour) {
+        this.neighbours.remove(neighbour);
+    }
 }
